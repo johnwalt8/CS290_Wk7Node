@@ -2,58 +2,74 @@
 
 // Walter Johnson
 // CS290, Winter 2019, HW Assignment: GET and POST checker
+// this file is based on the "forms-demo.js" file shown in lecture
 
-var express, app, handlebars, bodyParser;
+// one constant to rule them all
+const GPG = {
+    express: null,
+    app: null,
+    handlebars: null,
+    bodyParser: null,
+    path: null
+};
 
-express = require('express');
+GPG.express = require('express');
 
-app = express();
-handlebars = require('express-handlebars').create({defaultLayout:'main'});
-bodyParser = require('body-parser');
+GPG.app = GPG.express();
+GPG.handlebars = require('express-handlebars').create({defaultLayout: 'main'});
+GPG.bodyParser = require('body-parser');
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+GPG.app.use(GPG.bodyParser.urlencoded({extended: false}));
+GPG.app.use(GPG.bodyParser.json());
 
-app.engine('handlebars', handlebars.engine);
-app.set('view engine', 'handlebars');
-app.set('port', 3000);
+GPG.app.engine('handlebars', GPG.handlebars.engine);
+GPG.app.set('view engine', 'handlebars');
+GPG.app.set('port', 3000);
 
-app.get('/',function(req,res){
-  res.render('postGet', context);
+GPG.path = require('path');
+GPG.app.use(GPG.express.static(GPG.path.join(__dirname, '/public')));
+
+GPG.app.get('/', function (req, res) {
+    res.render('postGet');
 });
 
-app.get('/get-back',function(req,res){
-  var p, qParams = [], context = {};
-  for (p in req.query){
-    qParams.push({'name':p,'value':req.query[p]})
-  }
-  context.dataList = qParams;
-  res.render('get-back', context);
+GPG.app.get('/way-back', function (req, res) {
+    var pair, queryPairs = [], context = {};
+    for (pair in req.query){
+        queryPairs.push({'name': pair, 'value': req.query[pair]})
+    }
+    context.queryList = queryPairs;
+    res.render('get-back', context);
 });
 
-app.post('/post-back', function(req,res){
-  var p, qParams = [], context = {};
-  for (var p in req.body){
-    qParams.push({'name':p,'value':req.body[p]})
-  }
-  console.log(qParams);
-  console.log(req.body);
-  context.dataList = qParams;
-  res.render('post-back', context);
+GPG.app.post('/way-back', function (req, res) {
+    var pair, queryPairs = [], context = {};
+
+    for (pair in req.query) {
+        queryPairs.push({'name': pair, 'value': req.query[pair]})
+    }
+    context.urlList = queryPairs;
+
+    queryPairs = [];
+    for (pair in req.body){
+        queryPairs.push({'name':pair,'value':req.body[pair]})
+    }
+    context.bodyList = queryPairs;
+    res.render('post-back', context);
 });
 
-app.use(function(req,res){
-  res.status(404);
-  res.render('404');
+GPG.app.use( function (req, res) {
+    res.status(404);
+    res.render('404');
 });
 
-app.use(function(err, req, res, next){
-  console.error(err.stack);
-  res.type('plain/text');
-  res.status(500);
-  res.render('500');
+GPG.app.use(function(err, req, res, next){
+    console.error(err.stack);
+    res.type('plain/text');
+    res.status(500);
+    res.render('500');
 });
 
-app.listen(app.get('port'), function(){
-  console.log('Express started on http://localhost:' + app.get('port') + '; press Ctrl-C to terminate.');
+GPG.app.listen(GPG.app.get('port'), function () {
+    console.log('Express started on http://localhost:' + GPG.app.get('port') + '; press Ctrl-C to terminate.');
 });
